@@ -1,69 +1,90 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
+import { categorias, categoriaLabel } from '@/lib/categorias'
 
-export default function Home() {
+export default async function HomePage() {
+  const empresasDestaque = await prisma.company.findMany({
+    orderBy: [{ verificada: 'desc' }, { createdAt: 'desc' }],
+    take: 6,
+  })
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="max-w-5xl mx-auto px-4">
+      <section className="text-center py-16 sm:py-20">
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold mb-4">
+          Onde as empresas encontram negócios.
+        </h1>
+        <p className="text-neutral-600 text-lg max-w-xl mx-auto mb-8">
+          Descubra empresas, produtos, serviços e oportunidades de negócio em Angola.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/pedidos/novo" className="rounded-md bg-neutral-900 text-white px-6 py-3 hover:bg-neutral-700 transition-colors">
+            Publicar um pedido
+          </Link>
+          <Link href="/empresa/nova" className="rounded-md border border-neutral-900 px-6 py-3 hover:bg-neutral-100 transition-colors">
+            Cadastrar a minha empresa
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className="py-6">
+        <form method="get" action="/empresas" className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+          <input
+            type="text"
+            name="q"
+            placeholder="Pesquisar empresas, produtos ou serviços..."
+            className="flex-1 rounded-md border border-neutral-300 px-4 py-3"
+          />
+          <button type="submit" className="rounded-md border border-neutral-900 px-6 py-3 hover:bg-neutral-100 transition-colors">
+            Pesquisar
+          </button>
+        </form>
+      </section>
+
+      <section className="py-14">
+        <h2 className="font-serif text-2xl font-semibold mb-5">Principais categorias</h2>
+        <div className="flex flex-wrap gap-2">
+          {categorias.map(([valor, label]) => (
+            <Link
+              key={valor}
+              href={`/empresas?categoria=${valor}`}
+              className="rounded-full border border-neutral-300 px-4 py-2 text-sm hover:border-neutral-900 transition-colors"
+            >
+              {label}
+            </Link>
+          ))}
         </div>
-      </main>
+      </section>
+
+      <section className="py-14">
+        <h2 className="font-serif text-2xl font-semibold mb-5">Empresas em destaque</h2>
+        {empresasDestaque.length === 0 ? (
+          <p className="text-neutral-500">Ainda não há empresas cadastradas. Sê a primeira!</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {empresasDestaque.map((empresa) => (
+              <Link
+                key={empresa.id}
+                href={`/empresas/${empresa.slug}`}
+                className="block rounded-lg border border-neutral-200 p-5 hover:border-neutral-400 transition-colors"
+              >
+                <p className="font-semibold">{empresa.nome}</p>
+                <p className="text-sm text-neutral-500 mt-1">
+                  {categoriaLabel(empresa.categoria)} — {empresa.localizacao}
+                </p>
+                {empresa.verificada && <p className="text-sm text-green-700 mt-2">✓ Verificada</p>}
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="text-center border-t border-neutral-200 py-16">
+        <h2 className="font-serif text-xl font-semibold mb-4">Tem uma empresa?</h2>
+        <Link href="/empresa/nova" className="inline-block rounded-md bg-neutral-900 text-white px-6 py-3 hover:bg-neutral-700 transition-colors">
+          Cadastre gratuitamente
+        </Link>
+      </section>
     </div>
-  );
+  )
 }

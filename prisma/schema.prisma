@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum Categoria {
+  CONSTRUCAO
+  TECNOLOGIA
+  MARKETING_DESIGN
+  LOGISTICA
+  CONSULTORIA
+  COMERCIO
+  INDUSTRIA
+  SERVICOS_PROFISSIONAIS
+  HOTELARIA
+  AGRICULTURA
+  OUTRA
+}
+
+enum EstadoPedido {
+  NOVO
+  CONTACTADO
+  EM_NEGOCIACAO
+  GANHO
+  PERDIDO
+}
+
+model Company {
+  id          String    @id @default(cuid())
+  authUserId  String    @unique
+  nome        String
+  slug        String    @unique
+  categoria   Categoria
+  localizacao String
+  descricao   String?
+  whatsapp    String
+  email       String?
+  website     String?
+  logoUrl     String?
+  verificada  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Pedido {
+  id          String       @id @default(cuid())
+  authUserId  String?
+  descricao   String
+  categoria   Categoria
+  localizacao String
+  prazo       String?
+  nome        String
+  contacto    String
+  estado      EstadoPedido @default(NOVO)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
